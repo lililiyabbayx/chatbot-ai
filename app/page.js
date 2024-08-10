@@ -1,6 +1,13 @@
 "use client";
 
-import { Box, Button, Stack, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  Stack,
+  TextField,
+  Typography,
+  LinearProgress,
+} from "@mui/material";
 import { useState, useRef, useEffect } from "react";
 
 export default function Home() {
@@ -20,8 +27,8 @@ export default function Home() {
 
     const userMessage = message;
     setMessage("");
-    setMessages((messages) => [
-      ...messages,
+    setMessages((prevMessages) => [
+      ...prevMessages,
       { role: "user", content: userMessage },
       { role: "assistant", content: "" },
     ]);
@@ -49,9 +56,9 @@ export default function Home() {
       const data = await response.json();
       const assistantResponse = data.choices[0].message.content; // Extract only the assistant's response
 
-      setMessages((messages) => {
-        let lastMessage = messages[messages.length - 1];
-        let otherMessages = messages.slice(0, messages.length - 1);
+      setMessages((prevMessages) => {
+        let lastMessage = prevMessages[prevMessages.length - 1];
+        let otherMessages = prevMessages.slice(0, prevMessages.length - 1);
         return [
           ...otherMessages,
           { ...lastMessage, content: assistantResponse },
@@ -59,8 +66,8 @@ export default function Home() {
       });
     } catch (error) {
       console.error("Error:", error);
-      setMessages((messages) => [
-        ...messages,
+      setMessages((prevMessages) => [
+        ...prevMessages,
         {
           role: "assistant",
           content:
@@ -91,48 +98,71 @@ export default function Home() {
 
   return (
     <Box
-      sx={{
-        width: "100vw",
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        alignItems: "center",
-        p: 2,
-      }}
+      sx={{ p: 2, maxWidth: "70%", mx: "auto", backgroundColor: "##FFFFFF" }}
     >
-      <Stack spacing={2} sx={{ overflowY: "auto", flexGrow: 1 }}>
-        {messages.map((message, index) => (
+      <Stack sx={{ gap: 2, mb: 2 }}>
+        {messages.map((message, i) => (
           <Box
-            key={index}
+            key={i}
             sx={{
-              alignSelf: message.role === "user" ? "flex-end" : "flex-start",
-              backgroundColor: message.role === "user" ? "#1976d2" : "#f1f1f1",
-              color: message.role === "user" ? "#fff" : "#000",
-              padding: "8px 12px",
-              borderRadius: "8px",
-              maxWidth: "70%",
-              wordWrap: "break-word",
+              display: "flex",
+              justifyContent:
+                message.role === "user" ? "flex-end" : "flex-start",
             }}
           >
-            {message.content}
+            <Box
+              sx={{
+                minWidth: "250px",
+                maxWidth: "1000px",
+                p: 2,
+                border: "1px solid #555",
+                borderRadius: (theme) => theme.spacing(2),
+                boxShadow: 1, // Optional: Adds shadow to chat bubbles
+                backgroundColor:
+                  message.role === "user" ? "#000000" : "#e2e3e5", // Background color for chat bubbles
+              }}
+            >
+              <Typography
+                sx={{
+                  whiteSpace: "pre-line",
+                  wordBreak: "break-word",
+                  color: message.role === "user" ? "#FFFFFF" : "#000000", // Text color for chat bubbles
+                }}
+              >
+                {message.content}
+              </Typography>
+            </Box>
           </Box>
         ))}
         <div ref={messagesEndRef} />
       </Stack>
-      <Stack direction={"row"} spacing={2} sx={{ pt: 2 }}>
-        <TextField
-          label="Message"
-          fullWidth
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyPress={handleKeyPress}
-          disabled={isLoading}
-        />
-        <Button variant="contained" onClick={sendMessage} disabled={isLoading}>
-          {isLoading ? "Sending..." : "Send"}
-        </Button>
-      </Stack>
+
+      {isLoading && <LinearProgress />}
+
+      <TextField
+        fullWidth
+        multiline
+        minRows={2}
+        maxRows={10}
+        value={message}
+        label="Write Something ..."
+        onChange={(e) => setMessage(e.target.value)}
+        onKeyPress={handleKeyPress}
+        sx={{ mb: 2, backgroundColor: "#ffffff" }}
+      />
+
+      <Button
+        fullWidth
+        variant="contained"
+        onClick={sendMessage}
+        disabled={isLoading}
+        sx={{
+          backgroundColor: "#007bff", // Background color for the button
+          color: "#000000", // Text color for the button
+        }}
+      >
+        <Typography>Send</Typography>
+      </Button>
     </Box>
   );
 }
